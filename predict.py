@@ -5,9 +5,9 @@ import numpy as np
 import torch
 import yaml
 
-from data_loader import DataLoader
-from helper import OutputMode, ModelMode
-from model import TICIModelHandler
+from External.DeepTICI.data_loader import DataLoader
+from External.DeepTICI.helper import OutputMode, ModelMode
+from External.DeepTICI.model import TICIModelHandler
 
 
 class TICIScorer:
@@ -52,8 +52,11 @@ class TICIScorer:
 
         data = self.data_loader(dcm_path)
         raw_values = self.model(*data, model_mode=ModelMode.inference, output_mode=output_mode)
-        if not softmax:
-            score = [float(torch.argmax(raw_value, dim=-1)) for raw_value in raw_values]
+        if output_mode.name == 'all_frames':
+            score = raw_values
+        elif output_mode.name == 'last_frame':
+            if not softmax:
+                score = [float(torch.argmax(raw_value, dim=-1)) for raw_value in raw_values]
             if self.label_mapping:
                 score = [self.label_mapping[temp_score] for temp_score in score]
             if len(score) == 1:

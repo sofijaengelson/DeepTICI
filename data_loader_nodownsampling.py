@@ -69,18 +69,6 @@ class BasePreProcessor(BaseDataProcessor):
         """scales image values to an intervall of -1 to 1"""
         return 2 * (image - image.min()) / (image.max() - image.min()) - 1
 
-    @staticmethod
-    def median_normalize_slice(image: np.ndarray) -> np.ndarray:
-        """sets the image median to a value of 0"""
-        return image - np.median(image, axis=(-2, -1), keepdims=True)
-
-    @staticmethod
-    def set_background_to_one(image: np.ndarray) -> np.ndarray:
-        """sets background pixel value to one"""
-        if image.sum() / np.prod(image.shape) < 0:
-            image = image * -1
-        return image
-
 
 class PreProcessor(BasePreProcessor):
     """implements more specicfic PreProcessor steps, that take additional arguments"""
@@ -105,7 +93,6 @@ class PreProcessor(BasePreProcessor):
             boundaries = [image.min(), image.max()]
         return np.clip(image, boundaries[0], boundaries[-1])
 
-    @staticmethod
     def resample_image(image: np.ndarray, frame_shape=(380, 380)) -> np.ndarray:
         """resamples image to specified pixel size using nearest neighbours
         args:
@@ -126,20 +113,6 @@ class PreProcessor(BasePreProcessor):
         mask = np.std(image, axis=0) > tol
         idx = np.ix_(mask.any(1), mask.any(0))
         return image[:, idx[0], idx[1]]
-
-    @staticmethod
-    def center_crop(image, rel_size=(0.5, 0.5)) -> np.ndarray:
-        """takes the center crop of a given image. rel_size is the relative size of the center crop in relation to the
-         input image
-         args:
-            rel_size: relative size of the center crop in respect to the orginal image. """
-        x_size, y_size = image.shape[-2:]
-        pos_x_1 = int(x_size * (1 - rel_size[0]) / 2)
-        pos_y_1 = int(y_size * (1 - rel_size[1]) / 2)
-        pos_x_2 = int(pos_x_1 + x_size * rel_size[0])
-        pos_y_2 = int(pos_y_1 + y_size * rel_size[1])
-        image = image[..., pos_x_1:pos_x_2, pos_y_1:pos_y_2]
-        return image
 
 
 class DataLoader:
@@ -163,11 +136,26 @@ class DataLoader:
         assert len(series_lengths) == 2, f'expected 2 views, got {len(series_lengths)} views'
         assert series_lengths[0] == series_lengths[1], f'Length of DSA views are not equal'
 
-        # converts views to array and make a 3Ch image. The 3Ch are filled with consecutive frames
+        # # converts views to array and make a 3Ch image. The 3Ch are filled with consecutive frames
+        # min_size = round(min(series[0].shape[-1], series[1].shape[-1]),-1)
+        # if series[1].shape[-1] != min_size or series[1].shape[-2] != min_size:
+        #     series[1] = PreProcessor.resample_image(np.float32(series[1]), frame_shape=(min_size, min_size))
+        # if series[0].shape[-1] != min_size or series[0].shape[-2] != min_size:
+        #     series[0] = PreProcessor.resample_image(np.float32(series[0]), frame_shape=(min_size, min_size))
+
         series = np.array(series)
         series = self._make_3_ch_img(series)
         series = torch.tensor(series, dtype=torch.float32).unsqueeze(dim=0)
         return series, torch.tensor(series_lengths[0]).unsqueeze(dim=0)
+
+    def _load_image(self, image_path: Union[str, os.PathLike]) -> np.ndarray:
+        """loads dicom images to RAM and preprocesses image from path
+            args:
+                image_paths: list containing path to two views order: [ap, lat]
+            return: preprocessed dicom image as np.array"""
+        image = self._load_img_to_ram(image_path)
+        image = self.preprocessor(image)
+        return image.astype(np.half)
 
     @staticmethod
     def _make_3_ch_img(img: np.ndarray) -> np.ndarray:
@@ -189,15 +177,6 @@ class DataLoader:
                     img_temp[:, i_channel] = img[:, i_frame - 1 + i_channel]
             new_img[i_frame] = img_temp
         return new_img
-
-    def _load_image(self, image_path: Union[str, os.PathLike]) -> np.ndarray:
-        """loads dicom images to RAM and preprocesses image from path
-            args:
-                image_paths: list containing path to two views order: [ap, lat]
-            return: preprocessed dicom image as np.array"""
-        image = self._load_img_to_ram(image_path)
-        image = self.preprocessor(image)
-        return image.astype(np.half)
 
     @staticmethod
     def _load_img_to_ram(file_path: Union[str, os.PathLike]) -> np.ndarray:

@@ -8,7 +8,7 @@ import torch.nn.functional as F
 from efficientnet_pytorch import EfficientNet
 from torch.cuda.amp import autocast
 
-from helper import ModelMode, OutputMode
+from External.DeepTICI.helper import ModelMode, OutputMode
 
 
 class SwishImplementation(torch.autograd.Function):
@@ -139,6 +139,8 @@ class FastGRU(nn.Module):
 
             gates = x_t @ self.U + c_t @ self.W + self.bias
 
+            # gates = self.W @ x_t + self.U @ c_t + self.bias
+
             z_t, r_t = (
                 # input
                 torch.sigmoid(gates[:, :self.hidden_size]),
@@ -149,7 +151,12 @@ class FastGRU(nn.Module):
             x_t = torch.tanh(r_t * x_t @ self.U + c_t @ self.W + self.bias)[:,
                   self.hidden_size * 2:self.hidden_size * 3]
 
+            # candidate_c_t = torch.tanh(W @ x_t + U * (r_t @ c_t) + self.bias)[:,
+            #                   self.hidden_size * 2:self.hidden_size * 3]
+
             c_t = (1 - z_t) * c_t + x_t
+
+            # c_t = (1 - z_t) @ c_t + z_t @ candidate c_t
 
             hidden_seq.append(c_t.unsqueeze(0))
 
@@ -216,20 +223,20 @@ class TICIModelHandler(nn.Module):
 
         # inference
         if model_mode == ModelMode.inference:
-            with torch.no_grad():
+            #with torch.no_grad():
                 # ensemble
-                if isinstance(self.pretrained, list):
-                    for path in self.pretrained:
-                        self.load_model(path)
-                        self.eval()
-                        try:
-                            predictions += self.network(x)
-                        except NameError:
-                            predictions = self.network(x)
-                    predictions /= len(self.pretrained)
-                else:
+            if isinstance(self.pretrained, list):
+                for path in self.pretrained:
+                    self.load_model(path)
                     self.eval()
-                    predictions = self.network(x)
+                    try:
+                        predictions += self.network(x)
+                    except NameError:
+                        predictions = self.network(x)
+                predictions /= len(self.pretrained)
+            else:
+                self.eval()
+                predictions = self.network(x)
         # training
         elif model_mode == ModelMode.train:
             self.train()

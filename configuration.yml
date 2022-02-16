@@ -11,10 +11,10 @@ label_mapping:
 model_params:
   #path to weights
   pretrained:
-    - model_weights/experiment_I
-    - model_weights/experiment_III_0
-    - model_weights/experiment_III_1
-    - model_weights/experiment_III_2
+    - /home/student/Documents/GitHub/tici_interpretability/External/DeepTICI/model_weights/experiment_I
+#    - /home/student/Documents/GitHub/tici_interpretability/External/DeepTICI/model_weights/experiment_III_0
+#    - /home/student/Documents/GitHub/tici_interpretability/External/DeepTICI/model_weights/experiment_III_1
+#    - /home/student/Documents/GitHub/tici_interpretability/External/DeepTICI/model_weights/experiment_III_2
 
   #number of features from the encoder
   feature_size: 1280
