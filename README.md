@@ -1,19 +1,28 @@
 # DeepTICI
 
-This repository contains the official code and model weights for the following STROKE 2021 [publication](working_doi) (cf. [About](#About) section for details):
+This repository contains the official code and model weights for the following STROKE [publication](https://doi.org/10.1161/STROKEAHA.120.033807) (cf. [About](#About) section for details):
 
 ```
-@Article{STROKE,
+@article{DeepTICI,
+  title={Deep Learning–Based Automated Thrombolysis in Cerebral Infarction Scoring: A Timely Proof-of-Principle Study},
+  author={Nielsen, Maximilian and Waldmann, Moritz and Fr{\"o}lich, Andreas and Flottmann, Fabian and Hristova, Evelin and Bendszus, Martin and Seker, Fatih and Fiehler, Jens and Sentker, Thilo and Werner, Ren{\'e}},
+  journal={Stroke},
+  volume={XX},
+  number={X},
+  pages={XXX--XXX},
+  year={2021},
+  publisher={Am Heart Assoc}
 }
 ```
 
 ## Requirements
 The code has been tested with Python 3.8 on Ubuntu 20.04 LTS. The following Python packages are required (lower versions may also be sufficient):
-- test
-- a 
-- b
-- c 
-- d
+- efficientnet_pytorch >= 0.6
+- torch >= 1.6 
+- scikit-image >= 0.17.2
+- PyYAML >= 5.4.1 
+- opencv-python >= 4.5.2
+- SimpleITK >= 2.0.2
 
 ## Installation
 It is recommended to install the package in a separate virtual environment created with , e.g., [virtualenv](https://virtualenv.pypa.io/en/stable/) or [(mini)conda](https://docs.conda.io/projects/conda/en/latest/user-guide/install/index.html).
@@ -56,10 +65,36 @@ for data in data_loader:
 ```
 ## <a name="About"></a> About
 Implementation of the first fully automatic TICI-scoring system. The system is based on a combination of *encoder*, *GRU*
-and *classifier*. Details with regard to our proposed method can be found in the following MICCAI contribution:
+and *classifier*. Details of our proposed method can be found in the following MICCAI contribution:  
 [Time Matters: Handling Spatio-Temporal Perfusion Information for Automated TICI Scoring](https://doi.org/10.1007/978-3-030-59725-2_9)
 ![alt text](images/method.png "Method overview")
 
-A detailed performance analysis is available in Stroke:
-[Deep learning-based automated TICI scoring:a timely proof-of-principle study ](working_doi)
+A detailed performance analysis is available in Stroke:  
+[Deep Learning–Based Automated Thrombolysis in Cerebral Infarction Scoring: A Timely Proof-of-Principle Study](https://doi.org/10.1161/STROKEAHA.120.033807)
 ![alt text](images/results.png "Results overview")
+
+## Citation
+
+```
+@article{DeepTICI,
+  title={Deep Learning–Based Automated Thrombolysis in Cerebral Infarction Scoring: A Timely Proof-of-Principle Study},
+  author={Nielsen, Maximilian and Waldmann, Moritz and Fr{\"o}lich, Andreas and Flottmann, Fabian and Hristova, Evelin and Bendszus, Martin and Seker, Fatih and Fiehler, Jens and Sentker, Thilo and Werner, Ren{\'e}},
+  journal={Stroke},
+  volume={XX},
+  number={X},
+  pages={XXX--XXX},
+  year={2021},
+  publisher={Am Heart Assoc}
+}
+```
+
+```
+@inproceedings{TimeMatters,
+  title={Time Matters: Handling Spatio-Temporal Perfusion Information for Automated TICI Scoring},
+  author={Nielsen, Maximilian and Waldmann, Moritz and Sentker, Thilo and Fr{\"o}lich, Andreas and Fiehler, Jens and Werner, Ren{\'e}},
+  booktitle={International Conference on Medical Image Computing and Computer-Assisted Intervention},
+  pages={86--96},
+  year={2020},
+  organization={Springer}
+}
+```
